@@ -1,7 +1,7 @@
 
 # 概要
 
-この[TensorFlow Lite Model_maker](https://github.com/tensorflow/examples/blob/master/tensorflow_examples/lite/model_maker/README.md)を使用して物体検出モデルをトレーニング、エクスポート、評価するためのものです。主にEfficientDetモデルを使用しており、Pascal VOCフォーマットのカスタムデータセットでのトレーニングに対応しています。
+この[TensorFlow Lite Model_maker](https://github.com/tensorflow/examples/blob/master/tensorflow_examples/lite/model_maker/README.md)を使用して物体検出モデルをトレーニング、エクスポート、評価するためのものです。EfficientDetモデルを使用しており、Pascal VOCフォーマットのカスタムデータセットでのトレーニングに対応しています。
 このTensorFlow Lite Model_makerは現在メンテナンスがあまりされておらずインストールまで大変です。
 特定の環境で特定の状態でしか動作しないためDockerを使って実行するのがおすすめです。
 また内部で利用されているAPIは、Tensor Flow V1が利用されている模様です。
@@ -31,10 +31,16 @@
 ├── tensor_flow_lite_image_exec_bash.sh   # Dockerコンテナ実行スクリプト
 ├── train.sh               # トレーニング開始スクリプト
 └── data/
-    ├── images/            # 画像用ディレクトリ
-    └── annotations/       # Pascal VOC形式のアノテーションディレクトリ
+    ├── train//            
+    |   ├── images # トレーニング用の画像ディレクトリ
+    |   └── annotations # トレーニング用のPascal VOC形式のアノテーションディレクトリ
+    ├── val
+    |   ├── images # バリデーション用の画像ディレクトリ
+    |   └── annotations # バリデーション用のPascal VOC形式のアノテーションディレクトリ
+    └── test
+        ├── images # テスト用の画像ディレクトリ
+        └── annotations # テスト用のPascal VOC形式のアノテーションディレクトリ      /       
 ```
-
 ## セットアップ
 
 ### ステップ 1: リポジトリをクローン
@@ -43,17 +49,17 @@ git clone <repository-url>
 cd <repository-directory>
 ```
 
-### ステップ 2: Dockerイメージをビルド
-```bash
-./build_docker.sh
-```
-
-### ステップ 3: データセットの準備
+### ステップ 2: データセットの準備
 Pascal VOCフォーマットのデータセットを以下のディレクトリに配置します：
 ```
 data/
 ├── images/
 └── annotations/
+```
+
+### ステップ 3: Dockerイメージをビルド
+```bash
+./build_docker.sh
 ```
 
 ### ステップ 4: Dockerコンテナを実行
