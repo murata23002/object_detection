@@ -45,8 +45,8 @@
 
 ### ステップ 1: リポジトリをクローン
 ```bash
-git clone <repository-url>
-cd <repository-directory>
+git clone https://github.com/murata23002/object_detection.git
+cd object_detection
 ```
 
 ### ステップ 2: データセットの準備
