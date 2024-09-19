@@ -1,7 +1,7 @@
 
 # 概要
 
-この[TensorFlow Lite Model_maker](https://github.com/tensorflow/examples/blob/master/tensorflow_examples/lite/model_maker/README.md)を使用して物体検出モデルをトレーニング、エクスポート、評価するためのものです。EfficientDetモデルを使用しており、Pascal VOCフォーマットのカスタムデータセットでのトレーニングに対応しています。
+[TensorFlow Lite Model_maker](https://github.com/tensorflow/examples/blob/master/tensorflow_examples/lite/model_maker/README.md)を使用して物体検出モデルをトレーニング、エクスポート、評価するためのものです。EfficientDetモデルを使用しており、Pascal VOCフォーマットのカスタムデータセットでのトレーニングに対応しています。
 このTensorFlow Lite Model_makerは現在メンテナンスがあまりされておらずインストールまで大変です。
 特定の環境で特定の状態でしか動作しないためDockerを使って実行するのがおすすめです。
 また内部で利用されているAPIは、Tensor Flow V1が利用されている模様です。
