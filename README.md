@@ -39,7 +39,7 @@
     |   └── annotations # バリデーション用のPascal VOC形式のアノテーションディレクトリ
     └── test
         ├── images # テスト用の画像ディレクトリ
-        └── annotations # テスト用のPascal VOC形式のアノテーションディレクトリ      /       
+        └── annotations # テスト用のPascal VOC形式のアノテーションディレクトリ
 ```
 ## セットアップ
 
