@@ -31,13 +31,13 @@
 ├── tensor_flow_lite_image_exec_bash.sh   # Dockerコンテナ実行スクリプト
 ├── train.sh               # トレーニング開始スクリプト
 └── data/
-    ├── train//            
+    ├── train/            
     |   ├── images # トレーニング用の画像ディレクトリ
     |   └── annotations # トレーニング用のPascal VOC形式のアノテーションディレクトリ
-    ├── val
+    ├── val/
     |   ├── images # バリデーション用の画像ディレクトリ
     |   └── annotations # バリデーション用のPascal VOC形式のアノテーションディレクトリ
-    └── test
+    └── test/
         ├── images # テスト用の画像ディレクトリ
         └── annotations # テスト用のPascal VOC形式のアノテーションディレクトリ
 ```
