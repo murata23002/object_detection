@@ -1,7 +1,7 @@
 import imghdr
 from pathlib import Path
 
-data_dir = r"./senior_head_and_head/train/images/"
+data_dir = r"you setting data path"
 image_extensions = [".png", ".jpg"]  # add there all your images file extensions
 
 img_type_accepted_by_tf = ["bmp", "gif", "jpeg", "png"]
