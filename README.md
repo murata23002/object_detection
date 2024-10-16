@@ -86,16 +86,17 @@ data/
   - `--model`: EfficientDetモデル名（例: efficientdet-lite0）
   - `--tfilteName`: エクスポートするTFLiteファイルの名前
   - `--checkout`: チェックポイント保存用ディレクトリ
-  - `--dotrain`: トレーニングを行うかどうかのフラグ
+  - `--resumeCheckpoint`: 学習の再開をする対象のディレクトリ
+  - `--freeze`: 重みの固定対象 e.g (efficientnet|fpn_cells|resample_p6) or ""
 
 ### `build_docker.sh`
 - 必要なTensorFlow環境を含むDockerイメージをビルドします。
 
 ### `tensor_flow_lite_image_exec_bash.sh`
-- GPUサポートを有効にしたDockerコンテナを実行し、プロジェクトを操作可能にします。
+- GPUサポートを有効にしたDockerコンテナを実行する
 
 ### `train.sh`
-- 事前に設定したパスやパラメータで`train.py`を実行するスクリプト。TFLiteモデルの名前は実行時の日時で動的に生成されます。
+- 設定したパスやパラメータで`train.py`を実行するスクリプト。TFLiteモデルの名前は実行時の日時で動的に生成されます。
 
 ## トレーニング完了通知
 
@@ -104,7 +105,7 @@ data/
 ```python
 # Google Chatへの通知を送信する関数
 def send_notification(message):
-    url = "user chat webhook url" 
+    url = "you chat webhook url" 
     if url:
         data = {"text": message}
         response = requests.post(url, json=data)
@@ -122,7 +123,7 @@ python train.py --train ./path/to/dataset \
     --batch 4 \
     --epochs 500 \
     --tfilteName head_face_body_limb_$DATE.tflite \
-    --checkout output/checkout_1_$DATE
+    --checkout output/checkout_1
 ```
 
 ## エクスポートされたモデル
