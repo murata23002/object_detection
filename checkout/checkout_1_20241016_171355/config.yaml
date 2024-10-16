@@ -1,0 +1,107 @@
+act_type: relu6
+alpha: 0.25
+anchor_scale: 4.0
+apply_bn_for_resampling: true
+aspect_ratios:
+- 1.0
+- 2.0
+- 0.5
+autoaugment_policy: null
+backbone_config: null
+backbone_name: efficientnet-lite4
+batch_norm_trainable: true
+batch_size: 6
+box_class_repeats: 4
+box_loss_weight: 50.0
+ckpt_var_scope: null
+clip_gradients_norm: 10.0
+conv_after_downsample: false
+conv_bn_act_pattern: false
+data_format: channels_last
+dataset_type: null
+debug: false
+delta: 0.1
+drop_remainder: true
+eval_samples: 1200
+first_lr_drop_epoch: 200.0
+fpn_cell_repeats: 7
+fpn_config: null
+fpn_name: null
+fpn_num_filters: 224
+fpn_weight_method: sum
+gamma: 1.5
+grad_checkpoint: true
+grid_mask: false
+heads:
+- object_detection
+image_size: !!python/tuple
+- 640
+- 640
+img_summary_steps: null
+input_rand_hflip: true
+iou_loss_type: null
+iou_loss_weight: 1.0
+is_training_bn: true
+jitter_max: 2.0
+jitter_min: 0.1
+label_map:
+    1: Body
+    2: Face
+    3: Foot (Feet)
+    4: Hand
+    5: Head
+label_smoothing: 0.0
+learning_rate: 0.08
+loss_scale: null
+lr_decay_method: cosine
+lr_warmup_epoch: 1.0
+lr_warmup_init: 0.008
+map_freq: 5
+max_instances_per_image: 2000
+max_level: 7
+mean_rgb: 127.0
+min_level: 3
+mixed_precision: false
+model_dir: checkout/checkout_1_20241016_171355
+model_name: efficientdet-lite4
+model_optimizations: {}
+momentum: 0.9
+moving_average_decay: 0
+name: efficientdet-lite4
+nms_configs:
+    iou_thresh: null
+    max_nms_inputs: 0
+    max_output_size: 100
+    method: gaussian
+    pyfunc: false
+    score_thresh: 0.0
+    sigma: null
+num_classes: 5
+num_epochs: 100
+num_scales: 3
+optimizer: sgd
+poly_lr_power: 0.9
+positives_momentum: null
+profile: false
+regenerate_source_id: false
+sample_image: null
+save_freq: epoch
+scale_range: false
+second_lr_drop_epoch: 250.0
+seg_num_classes: 3
+separable_conv: true
+skip_crowd_during_training: true
+skip_mismatch: true
+stddev_rgb: 128.0
+steps_per_epoch: 3187
+steps_per_execution: 1
+strategy: gpus
+survival_prob: null
+target_size: null
+tf_random_seed: 111111
+tflite_max_detections: 50
+use_keras_model: true
+val_json_file: /tmp/tmp0qsuo5gu/fd2c112752054ea1fcebcf49d7779205_annotations.json
+var_freeze_expr: ''
+verbose: 1
+weight_decay: 4.0e-05
