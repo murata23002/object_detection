@@ -1,4 +1,5 @@
 import argparse
+from collections import defaultdict
 import os
 import xml.etree.ElementTree as ET
 import requests
@@ -22,56 +23,72 @@ def send_notification(message):
         if response.status_code != 200:
             logging.error("Failed to send notification.")
 
-def read_xml(directory):
-    class_list = set()
+def read_xml(directory, target):
+    class_list = []  # Initialize as a list, not a tuple
+    class_count = defaultdict(int)  # For counting occurrences of each class
+
     logging.info(f"Reading XML files from directory: {directory}")
+    
+    # Iterate through the XML files in the directory
     for filename in os.listdir(directory):
         if filename.endswith(".xml"):
             xml_file = os.path.join(directory, filename)
             tree = ET.parse(xml_file)
             root = tree.getroot()
+            
+            # Iterate over each 'object' in the XML file
             for obj in root.findall("object"):
                 name = obj.find("name").text
-                class_list.add(name)
-    logging.info(f"Found classes: {class_list}")
-    return list(class_list)
+                # Append the name to class_list and count it
+                class_list.append(name)
+                class_count[name] += 1
+    
+    unique_class_list = sorted(list(set(class_list)))
+    logging.info(f"Found classes: {unique_class_list}")
+    logging.info(f"Class occurrences: {dict(class_count)}")
+    
+    return unique_class_list
 
 def load_data(data_dir, target):
     dir_path = os.path.join(data_dir, target)
     img_dir = os.path.join(dir_path, "images")
     ann_dir = os.path.join(dir_path, "annotations")
-    classes = read_xml(ann_dir)
+    classes = read_xml(ann_dir, target)
     classes = sorted(classes)
     logging.info(f"Reading directory: {ann_dir}, Class list: {classes}")
     return object_detector.DataLoader.from_pascal_voc(img_dir, ann_dir, classes)
 
-def custom_get_callbacks(params, val_dataset=None):
 
-    callbacks = train_lib.get_callbacks(params, val_dataset)
-    callbacks = [cb for cb in callbacks if not isinstance(cb, tf.keras.callbacks.ModelCheckpoint)]
-    
+def custom_get_callbacks(params, val_dataset=None):
+    callbacks = []
     recent_ckpt_callback = tf.keras.callbacks.ModelCheckpoint(
-        filepath=os.path.join(params['model_dir'], 'ckpt-{epoch:d}.h5'),
+        filepath=os.path.join(params['model_dir'], 'ckpt-{epoch:d}'),
         verbose=params['verbose'],
         save_freq=params['save_freq'],
         save_weights_only=True,
         max_to_keep=6
     )
+    callbacks.append(recent_ckpt_callback)
 
     best_ckpt_callback = tf.keras.callbacks.ModelCheckpoint(
-        filepath=os.path.join(params['model_dir'], 'best_weights.h5'),
+        filepath=os.path.join(params['model_dir'], 'best_weights'),
         verbose=params['verbose'],
         save_weights_only=True,
         monitor='val_loss',
         save_best_only=True,
         mode='min' 
     )
-
-    callbacks = [recent_ckpt_callback, best_ckpt_callback]
+    callbacks.append(best_ckpt_callback)
+    
+    tb_callback = tf.keras.callbacks.TensorBoard(
+        log_dir=params['model_dir'],
+        update_freq=params['steps_per_execution'],
+        profile_batch=2 if params['profile'] else 0)
+    callbacks.append(tb_callback)
 
     return callbacks
 
-def model_train(detector, train_data, val_data, batch_size, epochs, resume_checkpoint):
+def model_train(detector, train_data, val_data, batch_size, epochs, resume_checkpoint, do_train):
     train_ds, steps_per_epoch, _ = detector._get_dataset_and_steps(train_data, batch_size, is_training=True)
     validation_ds, validation_steps, val_json_file = detector._get_dataset_and_steps(val_data, batch_size, is_training=False)
     model = detector.model
@@ -100,9 +117,10 @@ def model_train(detector, train_data, val_data, batch_size, epochs, resume_check
         logging.info("No checkpoint provided. Starting training from scratch.")
         completed_epochs = 0
 
-    callbacks = custom_get_callbacks(config.as_dict(), validation_ds)
-
-    model.fit(
+    callbacks = train_lib.get_callbacks(config.as_dict(), validation_ds)
+    #callbacks = custom_get_callbacks(config.as_dict(), validation_ds)
+    if do_train:
+        model.fit(
         train_ds,
         epochs=epochs,
         initial_epoch=completed_epochs,
@@ -110,9 +128,9 @@ def model_train(detector, train_data, val_data, batch_size, epochs, resume_check
         validation_data=validation_ds,
         validation_steps=validation_steps,
         callbacks=callbacks
-    )
+        )
 
-def create_detector(train_data, val_data, batch_size, epochs, checkout, resume_checkpoint, freeze_layers):
+def create_detector(train_data, val_data, batch_size, epochs, checkout, resume_checkpoint, freeze_layers, do_train):
     try:
         var_freeze_expr = freeze_layers if freeze_layers else ""
         logging.info("Creating EfficientDet model...")
@@ -141,7 +159,7 @@ def create_detector(train_data, val_data, batch_size, epochs, checkout, resume_c
                 epochs=epochs,
                 do_train=False,
             )
-            model_train(detector, train_data, val_data, batch_size, epochs, resume_checkpoint)
+            model_train(detector, train_data, val_data, batch_size, epochs, resume_checkpoint, do_train)
 
         return detector
     except Exception as e:
@@ -156,9 +174,14 @@ def export_and_evaluate_model(model, tfile_name, test_data):
         export_dir = os.path.join(os.getcwd(), "exported_model")
         os.makedirs(export_dir, exist_ok=True)
         model.export(export_dir=export_dir, tflite_filename=tfile_name)
-        accuracy = model.evaluate_tflite(os.path.join(export_dir, tfile_name), test_data)
-        logging.info(f"TFLite model accuracy: {accuracy}")
-        send_notification(f"TFLite model accuracy: {accuracy}")
+        
+        accuracy = model.evaluate(test_data)
+        logging.info(f"Model accuracy: {accuracy}")
+        
+        accuracy_tflite = model.evaluate_tflite(os.path.join(export_dir, tfile_name), test_data)
+        logging.info(f"TFLite model accuracy: {accuracy_tflite}")
+        
+        send_notification(f"Model accuracy: {accuracy} TFLite model accuracy: {accuracy_tflite}")
         send_notification("モデルのエクスポートと評価が完了しました。")
     except Exception as e:
         error_message = f"An error occurred during model export and evaluation: {str(e)}"
@@ -177,7 +200,8 @@ def main():
         parser.add_argument("--tfilteName", type=str, default="model.tflite", help="TFLite model filename")
         parser.add_argument("--checkout", type=str, default="checkout", help="Checkpoint directory")
         parser.add_argument("--resumeCheckpoint", type=str, default="", help="Resume training from checkpoint")
-        parser.add_argument("--freeze", type=str, default="", help="Layers to freeze (e.g., 'efficientnet|fpn_cells')")
+        parser.add_argument("--freeze", type=str, default=None, help="Layers to freeze (e.g., 'efficientnet|fpn_cells')")
+        parser.add_argument("--doTrain",action="store_true",help="Run only the test phase, skipping training and validation")
         args = parser.parse_args()
 
         setup_logging(args.checkout)
@@ -191,6 +215,8 @@ def main():
         train_data = load_data(args.train, "train")
         test_data = load_data(args.test, "test")
         val_data = load_data(args.val, "val")
+        dataset = f"train is {os.path.basename(args.train)}, {args.test}, {args.val}"
+        send_notification(f"{dataset} データの読み込みが完了しました。")
 
         model = create_detector(
             train_data,
@@ -200,6 +226,7 @@ def main():
             args.checkout,
             args.resumeCheckpoint,
             args.freeze,
+            args.doTrain,
         )
 
         export_and_evaluate_model(model, args.tfilteName, test_data)
